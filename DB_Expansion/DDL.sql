@@ -132,7 +132,7 @@ CREATE TABLE CustomerOrder (
 -- Transaction (Transaksi)
 CREATE TABLE Transaction (
     TransactionID SERIAL PRIMARY KEY,
-    OrderID INT REFERENCES "Order"(OrderID),
+    OrderID INT REFERENCES CustomerOrder(OrderID),
     PaymentMethod VARCHAR(50),
     TransactionDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     Amount DECIMAL(10, 2)
