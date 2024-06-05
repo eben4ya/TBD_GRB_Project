@@ -13,6 +13,9 @@ dotenv.config({ path: "./config.env" });
 app.use(bodyParser.json());
 app.use(cors());
 
+// routes 
+app.use("/api", require("./routes/routes"));
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, (err) => {
