@@ -1,7 +1,7 @@
 const db = require("../db/index");
 
 // endpoint to add new book
-exports.addBook = async (req, res) => {
+exports.add_Book = async (req, res) => {
   const { title, publicationYear, pages, publisherID } = req.body;
   try {
     const { rows } = await db.query(
@@ -16,3 +16,12 @@ exports.addBook = async (req, res) => {
 };
 
 // endpoint to get all books
+exports.get_All_Books = async (req, res) => {
+  try {
+    const { rows } = await db.query("SELECT * FROM Book");
+    res.status(200).json(rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
