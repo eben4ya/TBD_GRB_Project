@@ -16,15 +16,26 @@ exports.add_Book = async (req, res) => {
     // begin transaction
     await db.query("BEGIN");
 
-    // insert into Publisher
-    const publisherResult = await db.query(
-      "INSERT INTO Publisher (Name, City, Country, Telephone, YearFounded) VALUES ($1, $2, $3, $4, $5) RETURNING PublisherID ",
+    // Check if publisher already exists
+    let publisherResult = await db.query(
+      "SELECT PublisherID FROM Publisher WHERE Name = $1 AND City = $2 AND Country = $3 AND Telephone = $4 AND YearFounded = $5",
       [publisherName, city, country, telephone, yearFounded]
     );
 
-    const publisherID = publisherResult.rows[0].publisherid;
+    let publisherID;
+    if (publisherResult.rows.length === 0) {
+      // Insert new publisher if not exists
+      publisherResult = await db.query(
+        "INSERT INTO Publisher (Name, City, Country, Telephone, YearFounded) VALUES ($1, $2, $3, $4, $5) RETURNING PublisherID",
+        [publisherName, city, country, telephone, yearFounded]
+      );
+      publisherID = publisherResult.rows[0].publisherid;
+    } else {
+      // Use existing publisher ID
+      publisherID = publisherResult.rows[0].publisherid;
+    }
 
-    // insert into Book
+    // Insert into Book
     const bookResult = await db.query(
       "INSERT INTO Book (Title, PublicationYear, Pages, PublisherID) VALUES ($1, $2, $3, $4) RETURNING *",
       [title, publicationYear, pages, publisherID]
@@ -118,8 +129,8 @@ exports.update_Book = async (req, res) => {
         .status(404)
         .json({ error: "You cannot change the PublisherID" });
     }
-    // TODO: Add publisher when publisherID not exist
-    // TODO: remove publisher when currentPublisherID !== publisherID but publisherID exist
+    // TODO: Add publisher when currentPublisherID !== publisherID because publisherID not exist
+    // TODO: remove publisher when currentPublisherID !== publisherID because publisherID exist
     // Update Publisher
     const publisherUpdateResult = await db.query(
       "UPDATE Publisher SET Name = $1, City = $2, Country = $3, Telephone = $4, YearFounded = $5 WHERE PublisherID = $6 RETURNING *",
