@@ -1,5 +1,9 @@
 const db = require("../db/index");
 
+const isEmptyOrSpaces = (str) => {
+  return str === null || str.match(/^ *$/) !== null;
+};
+
 // endpoint to add new book
 exports.add_Book = async (req, res) => {
   const {
@@ -12,6 +16,23 @@ exports.add_Book = async (req, res) => {
     publicationYear,
     pages,
   } = req.body;
+
+  // validate input
+  if (
+    isEmptyOrSpaces(publisherName) ||
+    isEmptyOrSpaces(city) ||
+    isEmptyOrSpaces(country) ||
+    isEmptyOrSpaces(telephone) ||
+    isEmptyOrSpaces(title) ||
+    !publicationYear ||
+    !pages ||
+    !yearFounded
+  ) {
+    return res.status(400).json({
+      error: "All fields are required and cannot be empty or just spaces.",
+    });
+  }
+
   try {
     // begin transaction
     await db.query("BEGIN");
@@ -103,6 +124,22 @@ exports.update_Book = async (req, res) => {
     yearFounded,
   } = req.body;
 
+  // validate input
+  if (
+    isEmptyOrSpaces(publisherName) ||
+    isEmptyOrSpaces(city) ||
+    isEmptyOrSpaces(country) ||
+    isEmptyOrSpaces(telephone) ||
+    isEmptyOrSpaces(title) ||
+    !publicationYear ||
+    !pages ||
+    !yearFounded
+  ) {
+    return res.status(400).json({
+      error: "All fields are required and cannot be empty or just spaces.",
+    });
+  }
+  
   try {
     // transaction begin
     await db.query("BEGIN");
