@@ -1,11 +1,25 @@
+const fs = require('fs');
 const db = require("../db/index");
 
 const isEmptyOrSpaces = (str) => {
   return str === null || str.match(/^ *$/) !== null;
 };
 
+// Fungsi untuk menulis waktu eksekusi ke CSV
+const writeExecutionTimeToCSV = (endpoint, time) => {
+  const logLine = `${new Date().toISOString()},${endpoint},${time}\n`;
+  fs.appendFile('execution_times.csv', logLine, (err) => {
+    if (err) {
+      console.error('Error writing to CSV file', err);
+    }
+  });
+};
+
 // endpoint to add new book
 exports.add_Book = async (req, res) => {
+  console.time("add_Book");
+  const start = process.hrtime();
+
   const {
     publisherName,
     city,
@@ -28,6 +42,9 @@ exports.add_Book = async (req, res) => {
     !pages ||
     !yearFounded
   ) {
+    console.timeEnd("add_Book");
+    const elapsed = process.hrtime(start);
+    writeExecutionTimeToCSV('add_Book', (elapsed[0] * 1e9 + elapsed[1]) / 1e6); // Convert to milliseconds
     return res.status(400).json({
       error: "All fields are required and cannot be empty or just spaces.",
     });
@@ -65,12 +82,19 @@ exports.add_Book = async (req, res) => {
     // commit transaction
     await db.query("COMMIT");
 
+    console.timeEnd("add_Book");
+    const elapsed = process.hrtime(start);
+    writeExecutionTimeToCSV('add_Book', (elapsed[0] * 1e9 + elapsed[1]) / 1e6); // Convert to milliseconds
+
     res
       .status(201)
       .json({ publisher: publisherResult.rows[0], book: bookResult.rows[0] });
   } catch (err) {
     // rollback transaction
     await db.query("ROLLBACK");
+    console.timeEnd("add_Book");
+    const elapsed = process.hrtime(start);
+    writeExecutionTimeToCSV('add_Book', (elapsed[0] * 1e9 + elapsed[1]) / 1e6); // Convert to milliseconds
     console.error(err);
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -78,15 +102,27 @@ exports.add_Book = async (req, res) => {
 
 // endpoint to get all books
 exports.get_All_Books = async (req, res) => {
+  console.time("get_All_Books");
+  const start = process.hrtime();
+
   try {
     const { rows } = await db.query("SELECT * FROM Book");
     if (rows.length === 0) {
+      console.timeEnd("get_All_Books");
+      const elapsed = process.hrtime(start);
+      writeExecutionTimeToCSV('get_All_Books', (elapsed[0] * 1e9 + elapsed[1]) / 1e6); // Convert to milliseconds
       return res
         .status(400)
         .json({ warning: "There are no books in the database" });
     }
+    console.timeEnd("get_All_Books");
+    const elapsed = process.hrtime(start);
+    writeExecutionTimeToCSV('get_All_Books', (elapsed[0] * 1e9 + elapsed[1]) / 1e6); // Convert to milliseconds
     res.status(200).json(rows);
   } catch (err) {
+    console.timeEnd("get_All_Books");
+    const elapsed = process.hrtime(start);
+    writeExecutionTimeToCSV('get_All_Books', (elapsed[0] * 1e9 + elapsed[1]) / 1e6); // Convert to milliseconds
     console.error(err);
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -94,16 +130,28 @@ exports.get_All_Books = async (req, res) => {
 
 // endpoint to get book by id
 exports.get_Book_Id = async (req, res) => {
+  console.time("get_Book_Id");
+  const start = process.hrtime();
+
   const { id } = req.params;
   try {
     const { rows } = await db.query("SELECT * FROM Book WHERE BookID = $1", [
       id,
     ]);
     if (rows.length === 0) {
+      console.timeEnd("get_Book_Id");
+      const elapsed = process.hrtime(start);
+      writeExecutionTimeToCSV('get_Book_Id', (elapsed[0] * 1e9 + elapsed[1]) / 1e6); // Convert to milliseconds
       return res.status(404).json({ error: "Book not found" });
     }
+    console.timeEnd("get_Book_Id");
+    const elapsed = process.hrtime(start);
+    writeExecutionTimeToCSV('get_Book_Id', (elapsed[0] * 1e9 + elapsed[1]) / 1e6); // Convert to milliseconds
     res.status(200).json(rows[0]);
   } catch (err) {
+    console.timeEnd("get_Book_Id");
+    const elapsed = process.hrtime(start);
+    writeExecutionTimeToCSV('get_Book_Id', (elapsed[0] * 1e9 + elapsed[1]) / 1e6); // Convert to milliseconds
     console.error(err);
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -111,6 +159,9 @@ exports.get_Book_Id = async (req, res) => {
 
 // endpoint to update book by id
 exports.update_Book = async (req, res) => {
+  console.time("update_Book");
+  const start = process.hrtime();
+
   const { id } = req.params;
   const {
     title,
@@ -135,11 +186,14 @@ exports.update_Book = async (req, res) => {
     !pages ||
     !yearFounded
   ) {
+    console.timeEnd("update_Book");
+    const elapsed = process.hrtime(start);
+    writeExecutionTimeToCSV('update_Book', (elapsed[0] * 1e9 + elapsed[1]) / 1e6); // Convert to milliseconds
     return res.status(400).json({
       error: "All fields are required and cannot be empty or just spaces.",
     });
   }
-  
+
   try {
     // transaction begin
     await db.query("BEGIN");
@@ -152,6 +206,9 @@ exports.update_Book = async (req, res) => {
 
     if (currentBook.rows.length === 0) {
       await db.query("ROLLBACK");
+      console.timeEnd("update_Book");
+      const elapsed = process.hrtime(start);
+      writeExecutionTimeToCSV('update_Book', (elapsed[0] * 1e9 + elapsed[1]) / 1e6); // Convert to milliseconds
       return res.status(404).json({ error: "Book not found" });
     }
 
@@ -162,6 +219,9 @@ exports.update_Book = async (req, res) => {
     if (currentPublisherID !== publisherID) {
       // If PublisherIDt different from current PublisherID, rollback
       await db.query("ROLLBACK");
+      console.timeEnd("update_Book");
+      const elapsed = process.hrtime(start);
+      writeExecutionTimeToCSV('update_Book', (elapsed[0] * 1e9 + elapsed[1]) / 1e6); // Convert to milliseconds
       return res
         .status(404)
         .json({ error: "You cannot change the PublisherID" });
@@ -182,11 +242,17 @@ exports.update_Book = async (req, res) => {
 
     if (bookUpdateResult.rows.length === 0) {
       await db.query("ROLLBACK");
+      console.timeEnd("update_Book");
+      const elapsed = process.hrtime(start);
+      writeExecutionTimeToCSV('update_Book', (elapsed[0] * 1e9 + elapsed[1]) / 1e6); // Convert to milliseconds
       return res.status(404).json({ error: "Book not found" });
     }
 
     // Commit Transaction
     await db.query("COMMIT");
+    console.timeEnd("update_Book");
+    const elapsed = process.hrtime(start);
+    writeExecutionTimeToCSV('update_Book', (elapsed[0] * 1e9 + elapsed[1]) / 1e6); // Convert to milliseconds
     res.json({
       publisher: publisherUpdateResult.rows[0],
       book: bookUpdateResult.rows[0],
@@ -194,6 +260,9 @@ exports.update_Book = async (req, res) => {
   } catch (err) {
     // Rollback Transaction
     await db.query("ROLLBACK");
+    console.timeEnd("update_Book");
+    const elapsed = process.hrtime(start);
+    writeExecutionTimeToCSV('update_Book', (elapsed[0] * 1e9 + elapsed[1]) / 1e6); // Convert to milliseconds
     console.error(err);
     res.status(500).json({ error: "Internal Server Error" });
   }
@@ -201,6 +270,9 @@ exports.update_Book = async (req, res) => {
 
 // endpoint to delete book by id
 exports.delete_Book = async (req, res) => {
+  console.time("delete_Book");
+  const start = process.hrtime();
+
   const { id } = req.params;
   try {
     const { rows } = await db.query(
@@ -208,10 +280,19 @@ exports.delete_Book = async (req, res) => {
       [id]
     );
     if (rows.length === 0) {
+      console.timeEnd("delete_Book");
+      const elapsed = process.hrtime(start);
+      writeExecutionTimeToCSV('delete_Book', (elapsed[0] * 1e9 + elapsed[1]) / 1e6); // Convert to milliseconds
       return res.status(404).json({ error: "Book not found" });
     }
+    console.timeEnd("delete_Book");
+    const elapsed = process.hrtime(start);
+    writeExecutionTimeToCSV('delete_Book', (elapsed[0] * 1e9 + elapsed[1]) / 1e6); // Convert to milliseconds
     res.json(rows[0]);
   } catch (err) {
+    console.timeEnd("delete_Book");
+    const elapsed = process.hrtime(start);
+    writeExecutionTimeToCSV('delete_Book', (elapsed[0] * 1e9 + elapsed[1]) / 1e6); // Convert to milliseconds
     console.error(err);
     res.status(500).json({ error: "Internal Server Error" });
   }
