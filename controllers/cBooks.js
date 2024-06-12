@@ -1,16 +1,24 @@
 const fs = require('fs');
+const path = require("path");
 const db = require("../db/index");
 
 const isEmptyOrSpaces = (str) => {
   return str === null || str.match(/^ *$/) !== null;
 };
 
-// Fungsi untuk menulis waktu eksekusi ke CSV
+// Function to write execution time to CSV file
 const writeExecutionTimeToCSV = (endpoint, time) => {
+  const logDir = path.join(__dirname, "executionTime");
+  const logFile = path.join(logDir, "delete_Book.csv"); // ! change this line to write to different file
+
+  // Cek apakah direktori sudah ada, jika tidak buat direktori
+  if (!fs.existsSync(logDir)) {
+    fs.mkdirSync(logDir);
+  }
   const logLine = `${new Date().toISOString()},${endpoint},${time}\n`;
-  fs.appendFile('execution_times.csv', logLine, (err) => {
+  fs.appendFile(logFile, logLine, (err) => {
     if (err) {
-      console.error('Error writing to CSV file', err);
+      console.error("Error writing to CSV file", err);
     }
   });
 };
