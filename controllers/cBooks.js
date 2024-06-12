@@ -8,7 +8,7 @@ const isEmptyOrSpaces = (str) => {
 
 // Function to write execution time to CSV file
 const writeExecutionTimeToCSV = (endpoint, time) => {
-  const logDir = path.join(__dirname, "executionTime");
+  const logDir = path.join(__dirname, "executionTimeAPI");
   const logFile = path.join(logDir, "delete_Book.csv"); // ! change this line to write to different file
 
   // Cek apakah direktori sudah ada, jika tidak buat direktori

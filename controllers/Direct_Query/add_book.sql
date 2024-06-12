@@ -1,33 +1,41 @@
+
 -- Memulai transaksi
 BEGIN;
 
+-- Mengalihkan output ke file
+-- \o /add_book/publisher_check.csv
+
 -- Memeriksa apakah penerbit sudah ada
-\COPY (
-  EXPLAIN ANALYZE 
-  SELECT PublisherID 
-  FROM Publisher 
-  WHERE Name = 'Eben1' 
-  AND City = 'SKA1' 
-  AND Country = 'Indow1' 
-  AND Telephone = '085601691121' 
-  AND YearFounded = 2000
-) TO '/add_book/publisher_check.csv' CSV;
+EXPLAIN ANALYZE 
+SELECT PublisherID 
+FROM Publisher 
+WHERE Name = 'Eben2' 
+AND City = 'SKA2' 
+AND Country = 'Indow2' 
+AND Telephone = '085601691121' 
+AND YearFounded = 2000;
+
+-- Mengalihkan output ke file lain
+-- \o /add_book/publisher_insert.csv
 
 -- Menambahkan penerbit baru jika belum ada
-\COPY (
-  EXPLAIN ANALYZE 
-  INSERT INTO Publisher (Name, City, Country, Telephone, YearFounded) 
-  VALUES ('Eben1', 'SKA1', 'Indow1', '085601691121', 2000) 
-  RETURNING PublisherID
-) TO '/add_book/publisher_insert.csv' CSV;
+EXPLAIN ANALYZE 
+INSERT INTO Publisher (Name, City, Country, Telephone, YearFounded) 
+VALUES ('Eben2', 'SKA2', 'Indow2', '085601691121', 2000) 
+RETURNING PublisherID;
+
+-- Mengalihkan output ke file lain
+-- \o /add_book/book_insert.csv
 
 -- Menambahkan buku baru
-\COPY (
-  EXPLAIN ANALYZE 
-  INSERT INTO Book (Title, PublicationYear, Pages, PublisherID) 
-  VALUES ('Learn Javascript', 2000, 350, 1) 
-  RETURNING *
-) TO '/add_book/book_insert.csv' CSV;
+EXPLAIN ANALYZE 
+INSERT INTO Book (Title, PublicationYear, Pages) 
+VALUES ('Learn Javascript 2', 2000, 350) 
+RETURNING *;
+
+-- Menonaktifkan pengalihan output
+-- \o
 
 -- Menyimpan transaksi
 COMMIT;
+

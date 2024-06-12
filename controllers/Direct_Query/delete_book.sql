@@ -1,6 +1,6 @@
-\COPY (
-  EXPLAIN ANALYZE 
-  DELETE FROM Book 
-  WHERE BookID = 1 
-  RETURNING *
-) TO '/delete_book.csv' CSV;
+
+EXPLAIN ANALYZE 
+DELETE FROM Book 
+WHERE BookID = 55
+RETURNING *
+
